@@ -1,9 +1,9 @@
 // All copy for the site lives here, so it can be edited without touching components.
 export const site = {
-  name: "keyz",
-  title: "keyz — Designer and developer",
+  name: "Keyto",
+  title: "keyto — Designer and developer",
   description:
-    "Portfolio of keyz, a designer and developer making calm, precise interfaces for the web.",
+    "Portfolio of keyto, a designer and developer making calm, precise interfaces for the web.",
   // Only list sections that exist on the page.
   nav: [
     { label: "Work", href: "#work" },
@@ -28,7 +28,7 @@ export const site = {
         role: "Design and release",
         year: "2026",
         type: "Motion graphics",
-        href: "https://www.tiktok.com/@77forms/video/7635176330564226337",
+        href: "https://www.tiktok.com/@keytolab/video/7635176330564226337",
         linkLabel: "Watch on TikTok",
         logo: "/work/spotify-logo.png",
         // Brand colour used for the card's glow.
@@ -38,14 +38,14 @@ export const site = {
     comingSoon: {
       title: "More work soon",
       description: "New projects are in progress. Follow along on TikTok in the meantime.",
-      href: "https://www.tiktok.com/@77forms",
+      href: "https://www.tiktok.com/@keytolab",
       linkLabel: "Follow on TikTok",
     },
   },
   about: {
     // The statement is split into three parts; `highlight` gets the yellow, glowing italic.
     statement: {
-      before: "I'm keyz, a designer and developer making",
+      before: "I'm Keyto, a designer and developer making",
       highlight: "unforgettable",
       after: "motion, interfaces and brands.",
     },
@@ -74,17 +74,17 @@ export const site = {
     ],
     // Shown in this order.
     socials: [
-      { label: "TikTok", handle: "@77forms", href: "https://www.tiktok.com/@77forms" },
-      { label: "X", handle: "@gigovfx", href: "https://x.com/gigovfx" },
-      { label: "YouTube", handle: "@gigovfx", href: "https://www.youtube.com/@gigovfx" },
-      { label: "GitHub", handle: "keyzlab", href: "https://github.com/keyzlab" },
+      { label: "TikTok", handle: "@keytolab", href: "https://www.tiktok.com/@keytolab" },
+      { label: "X", handle: "@keytolab", href: "https://x.com/keytolab" },
+      { label: "YouTube", handle: "@keytofv", href: "https://www.youtube.com/@keytofv" },
+      { label: "GitHub", handle: "keytolab", href: "https://github.com/keytolab" },
     ],
   },
   contact: {
     // Headline split like the About statement; `highlight` gets the yellow, glowing italic.
     headline: { before: "Let's create the", highlight: "unforgettable", after: "." },
     intro: "Projects, collaborations or just a hello. Write to me directly.",
-    email: "keyzzlab@gmail.com",
+    email: "keytoslab@gmail.com",
     backToTop: "Back to top",
     // Footer copyright year. Set by hand: the page is pre-built, so it can't read today's date.
     copyrightYear: 2026,
