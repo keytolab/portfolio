@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight } from "next/font/google";
+import { Inter_Tight, Playfair_Display } from "next/font/google";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { GlassLens } from "@/components/cursor/glass-lens";
 import { site } from "@/content/site";
@@ -8,6 +8,15 @@ import "./globals.css";
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
   subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+// Accent face for single highlighted words (italic only, so only that file loads).
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "latin-ext"],
+  style: "italic",
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -35,7 +44,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${interTight.variable} antialiased`}>
+    <html lang="en" className={`${interTight.variable} ${playfair.variable} antialiased`}>
       <body>
         <noscript>
           <style>{`.hero-pending .hl-line, .hero-pending [data-hero-reveal] { visibility: visible !important; }`}</style>

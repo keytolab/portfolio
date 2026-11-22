@@ -135,7 +135,24 @@ html.lens-cursor * {
   visibility: hidden;
 }
 
-/* Display type used by the hero headline (and copied by the glass lens). */
+/* Highlighted word: Playfair Display italic in warm yellow with a soft
+   glow, echoing the green glow behind the Spotify logo. */
+.accent-word {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  /* Playfair's x-height is smaller than Inter Tight's; nudge it up to match visually. */
+  font-size: 1.08em;
+  letter-spacing: -0.01em;
+  color: #ffd60a;
+  /* --glow (0–1) lets the glow bloom in on scroll; defaults to full. */
+  text-shadow:
+    0 0 14px rgb(255 214 10 / calc(0.55 * var(--glow, 1))),
+    0 0 36px rgb(255 200 0 / calc(0.35 * var(--glow, 1))),
+    0 0 80px rgb(255 180 0 / calc(0.25 * var(--glow, 1)));
+}
+
+/* Display type used by the hero headline. */
 .display-type {
   font-family: var(--font-inter-tight);
   font-weight: 500;

@@ -4,8 +4,11 @@ export const site = {
   title: "Jacek — Designer and developer",
   description:
     "Portfolio of Jacek, a designer and developer making calm, precise interfaces for the web.",
-  // Only list sections that exist on the page. Add About / Contact back when those sections are built.
-  nav: [{ label: "Work", href: "#work" }],
+  // Only list sections that exist on the page. Add Contact when that section is built.
+  nav: [
+    { label: "Work", href: "#work" },
+    { label: "About", href: "#about" },
+  ],
   hero: {
     // Each string is one line of the giant headline.
     headline: ["Designed", "and built."],
@@ -37,5 +40,21 @@ export const site = {
       href: "https://www.tiktok.com/@77forms",
       linkLabel: "Follow on TikTok",
     },
+  },
+  about: {
+    // The statement is split into three parts; `highlight` gets the yellow, glowing italic.
+    statement: {
+      before: "I'm Jacek, a designer and developer making",
+      highlight: "unforgettable",
+      after: "motion, interfaces and brands.",
+    },
+    services: ["Motion graphics", "UI/UX design", "Web development", "Branding"],
+    // Shown in this order.
+    socials: [
+      { label: "TikTok", handle: "@77forms", href: "https://www.tiktok.com/@77forms" },
+      { label: "X", handle: "@gigovfx", href: "https://x.com/gigovfx" },
+      { label: "YouTube", handle: "@gigovfx", href: "https://www.youtube.com/@gigovfx" },
+      { label: "GitHub", handle: "keyzlab", href: "https://github.com/keyzlab" },
+    ],
   },
 } as const;

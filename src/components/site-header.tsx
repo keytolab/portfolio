@@ -6,6 +6,11 @@ export function SiteHeader() {
       data-hero-reveal
       className="fixed inset-x-0 top-0 z-30 flex cursor-auto items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12"
     >
+      {/* Soft fade behind the bar so content scrolling underneath doesn't collide with it. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[160%] bg-gradient-to-b from-black/80 via-black/40 to-transparent"
+      />
       <a href="#top" className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
         {site.name}
       </a>
