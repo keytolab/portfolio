@@ -31,6 +31,8 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         rel="noopener noreferrer"
         tabIndex={-1}
         aria-hidden
+        // Large image link: keep the glass cursor at full size over it.
+        data-lens-ignore
         className="relative block aspect-[16/10] overflow-hidden rounded-[22px] bg-[#030504] ring-1 ring-white/[0.07] sm:rounded-[28px]"
       >
         {/* Brand glow — brightens on hover. */}

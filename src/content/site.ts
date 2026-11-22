@@ -4,11 +4,8 @@ export const site = {
   title: "Jacek — Designer and developer",
   description:
     "Portfolio of Jacek, a designer and developer making calm, precise interfaces for the web.",
-  nav: [
-    { label: "Work", href: "#work" },
-    { label: "About", href: "#about" },
-    { label: "Contact", href: "#contact" },
-  ],
+  // Only list sections that exist on the page. Add About / Contact back when those sections are built.
+  nav: [{ label: "Work", href: "#work" }],
   hero: {
     // Each string is one line of the giant headline.
     headline: ["Designed", "and built."],

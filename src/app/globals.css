@@ -88,6 +88,14 @@
   }
   html {
     @apply font-sans;
+    /* Removes the double-tap-to-zoom delay on taps (pinch zoom still works). */
+    touch-action: manipulation;
+  }
+  h1,
+  h2,
+  h3 {
+    /* Avoid a single orphaned word on the last line of a heading. */
+    text-wrap: balance;
   }
   ::selection {
     background: var(--ink);
@@ -115,6 +123,12 @@
   .scroll-line { animation: none; background: var(--ink-faint); }
 }
 
+/* The glass lens is the cursor on mouse devices (class set by GlassLens). */
+html.lens-cursor,
+html.lens-cursor * {
+  cursor: none !important;
+}
+
 /* Hide hero content until the entrance animation takes over (see <noscript> in layout). */
 .hero-pending .hl-line,
 .hero-pending [data-hero-reveal] {
@@ -126,7 +140,8 @@
   font-family: var(--font-inter-tight);
   font-weight: 500;
   font-size: clamp(4.25rem, 15.5vw, 15.5rem);
-  line-height: 0.86;
+  /* Tight, but enough that the "g" descender clears the next line's ascenders. */
+  line-height: 1;
   letter-spacing: -0.055em;
 }
 @media (max-width: 639px) {

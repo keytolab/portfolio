@@ -12,8 +12,11 @@ import gsap from "gsap";
   drop does. The red, green and blue channels are displaced by slightly
   different amounts, which leaves a faint rainbow along edges.
 
+  It is the site-wide cursor (the native cursor is hidden while it's active).
   Motion: the lens follows the pointer like a camera move — it eases in, glides,
   and eases out to a stop with no overshoot. It never changes shape.
+  Size: full size over the hero, shrinking smoothly as you scroll down into the
+  rest of the page, and smaller still over links and buttons.
 
   backdrop-filter with an SVG url() only renders in Chromium browsers. Elsewhere
   the lens falls back to clear frosted glass with the same rim and motion.
@@ -70,13 +73,25 @@ function isChromium() {
   return !!brands?.some((b) => /Chromium/i.test(b.brand));
 }
 
-export function GlassLens({
-  heroRef,
-  active,
-}: {
-  heroRef: React.RefObject<HTMLElement | null>;
-  active: boolean;
-}) {
+// Lens size relative to full: in the hero, after scrolling past it, and over a link/button.
+const HERO_SCALE = 1;
+const PAGE_SCALE = 0.28;
+const CONTROL_SCALE = 0.4; // multiplied with the current scale
+
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+
+/**
+ * True over links, buttons and form fields, where the lens shrinks.
+ * Add `data-lens-ignore` to any element (e.g. a big clickable image) to keep
+ * the lens at its normal size over it.
+ */
+function isControl(el: Element | null | undefined) {
+  if (!el?.closest) return false;
+  if (el.closest("[data-lens-ignore]")) return false;
+  return !!el.closest("a, button, [role='button'], input, textarea, select, label");
+}
+
+export function GlassLens() {
   const filterId = `liquid-glass-${useId().replace(/:/g, "")}`;
   const bodyRef = useRef<HTMLDivElement>(null);
   const [supported, setSupported] = useState(false);
@@ -104,19 +119,25 @@ export function GlassLens({
   // Non-Chromium browsers get no map → frosted-glass fallback.
   const map = useMemo(() => (size && isChromium() ? makeDisplacementMap(size) : null), [size]);
 
+  // Hide the native cursor while the lens stands in for it.
+  useEffect(() => {
+    if (!supported) return;
+    document.documentElement.classList.add("lens-cursor");
+    return () => document.documentElement.classList.remove("lens-cursor");
+  }, [supported]);
+
   // Pointer follow on GSAP's ticker (shared with Lenis).
   useEffect(() => {
     const body = bodyRef.current;
-    const hero = heroRef.current;
-    if (!supported || !active || !body || !hero || !size) return;
+    if (!supported || !body || !size) return;
 
     const R = size / 2;
-    const target = { x: 0, y: 0, s: 0 };
+    const target = { x: 0, y: 0 };
     const mid = { x: 0, y: 0 }; // first smoothing stage
     const pos = { x: 0, y: 0, s: 0 }; // second stage = what's drawn
     let seen = false;
-    let clientX = 0;
-    let clientY = 0;
+    let inside = false;
+    let overControl = false;
 
     // Camera-style follow: two exponential smoothing stages in series. One stage
     // alone starts abruptly; two give an ease-in *and* ease-out, like a dolly
@@ -126,29 +147,27 @@ export function GlassLens({
     const approach = (from: number, to: number, tau: number, dt: number) =>
       from + (to - from) * (1 - Math.exp(-dt / tau));
 
-    const toHero = () => {
-      const hr = hero.getBoundingClientRect();
-      target.x = clientX - hr.left;
-      target.y = clientY - hr.top;
-    };
-
+    // Viewport coordinates: the lens layer is position: fixed, so scrolling needs no correction.
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
-      clientX = e.clientX;
-      clientY = e.clientY;
-      toHero();
-      const hr = hero.getBoundingClientRect();
-      const insideHero = clientY >= hr.top && clientY <= hr.bottom;
-      const overControl = (e.target as Element | null)?.closest?.("a, button");
-      target.s = !insideHero ? 0 : overControl ? 0.25 : 1;
+      target.x = e.clientX;
+      target.y = e.clientY;
+      inside = true;
+      overControl = isControl(e.target as Element | null);
       if (!seen) {
         seen = true;
         pos.x = mid.x = target.x;
         pos.y = mid.y = target.y;
       }
     };
-    const onLeave = () => (target.s = 0);
-    const onScroll = () => seen && toHero();
+    // The element under a still pointer changes while scrolling, so re-check it then.
+    const onScroll = () => {
+      if (!seen) return;
+      const el = document.elementFromPoint(target.x, target.y);
+      overControl = isControl(el);
+    };
+    const onLeave = () => (inside = false);
+    const onEnter = () => (inside = true);
 
     const tick = () => {
       // Real elapsed seconds, capped so a backgrounded tab doesn't jump.
@@ -157,7 +176,16 @@ export function GlassLens({
       mid.y = approach(mid.y, target.y, FOLLOW_TAU, dt);
       pos.x = approach(pos.x, mid.x, FOLLOW_TAU, dt);
       pos.y = approach(pos.y, mid.y, FOLLOW_TAU, dt);
-      pos.s = approach(pos.s, target.s, SCALE_TAU, dt);
+
+      // Scroll-linked size: full in the hero, easing down to PAGE_SCALE over the
+      // first ~35% of a screen of scrolling. Driven by scroll position, so it
+      // shrinks as you scroll (and grows back if you scroll up).
+      const hero = document.getElementById("top");
+      const span = (hero?.offsetHeight ?? window.innerHeight) * 0.35;
+      const t = smoothstep(Math.min(1, Math.max(0, window.scrollY / span)));
+      const base = HERO_SCALE + (PAGE_SCALE - HERO_SCALE) * t;
+      const targetScale = !inside ? 0 : overControl ? base * CONTROL_SCALE : base;
+      pos.s = approach(pos.s, targetScale, SCALE_TAU, dt);
       const s = Math.max(pos.s, 0);
 
       // The lens always stays a perfect circle; only position and size change.
@@ -166,17 +194,20 @@ export function GlassLens({
       body.style.opacity = s < 0.02 ? "0" : "1";
     };
 
+    const root = document.documentElement;
     window.addEventListener("pointermove", onMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onLeave);
+    root.addEventListener("pointerleave", onLeave);
+    root.addEventListener("pointerenter", onEnter);
     window.addEventListener("scroll", onScroll, { passive: true });
     gsap.ticker.add(tick);
     return () => {
       window.removeEventListener("pointermove", onMove);
-      document.documentElement.removeEventListener("pointerleave", onLeave);
+      root.removeEventListener("pointerleave", onLeave);
+      root.removeEventListener("pointerenter", onEnter);
       window.removeEventListener("scroll", onScroll);
       gsap.ticker.remove(tick);
     };
-  }, [supported, active, heroRef, size]);
+  }, [supported, size]);
 
   if (!supported || !size) return null;
 
@@ -190,7 +221,7 @@ export function GlassLens({
     : "blur(5px) saturate(1.4) brightness(1.08)";
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-20">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-50">
       {useRefraction && (
         <svg width="0" height="0" className="absolute" focusable="false">
           <filter

@@ -6,7 +6,9 @@ export function HeadlineLines() {
   return (
     <>
       {site.hero.headline.map((line) => (
-        <span key={line} className="block overflow-hidden pb-[0.09em] -mb-[0.09em]">
+        // The mask (overflow-hidden) hides lines before they rise in. Its bottom padding must
+        // clear descenders like "g" at this tight line-height; the negative margin keeps spacing.
+        <span key={line} className="block overflow-hidden pb-[0.22em] -mb-[0.22em]">
           <span className="hl-line block whitespace-nowrap">{line}</span>
         </span>
       ))}
