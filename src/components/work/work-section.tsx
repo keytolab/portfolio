@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { site } from "@/content/site";
+import { WORK_PIN_ID } from "@/components/providers/smooth-scroll";
+import { sideIn } from "@/lib/reveal";
 import { ProjectCard } from "./project-card";
 import { ComingSoonCard } from "./coming-soon-card";
 
@@ -35,11 +37,12 @@ export function WorkSection() {
           x: () => -distance(),
           ease: "none",
           scrollTrigger: {
+            id: WORK_PIN_ID, // in-page links use this to skip past the track
             trigger: section,
             start: "top top",
             end: () => `+=${distance()}`,
             pin: true,
-            scrub: 0.4,
+            scrub: 0.7, // a touch of easing so the track glides rather than tracks the wheel 1:1
             invalidateOnRefresh: true,
             onUpdate: (self) => gsap.set(progressRef.current, { scaleX: self.progress }),
           },
@@ -58,22 +61,30 @@ export function WorkSection() {
                 containerAnimation: slide,
                 start: "left right",
                 end: "right left",
-                scrub: true,
+                scrub: 0.7,
               },
             },
           );
         });
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        // Entrances: the intro glides in from the left, cards from the right, each
+        // starting blurred and settling sharp. The first card is on screen when the
+        // section arrives; later ones play as the track carries them into view.
+        sideIn("[data-work-intro] > *", { from: "left", trigger: section, start: "top 70%" });
+        const panels = gsap.utils.toArray<HTMLElement>("[data-work-panel]");
+        panels.forEach((panel, i) => {
+          if (i === 0) sideIn(panel, { from: "right", trigger: section, start: "top 60%", delay: 0.12 });
+          else sideIn(panel, { from: "right", trigger: panel, start: "left 92%", containerAnimation: slide, distance: 0.06 });
+        });
       });
 
-      // Panels rise in as they arrive (all sizes; skipped when motion is reduced).
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from("[data-work-intro] > *", {
-          y: 40,
-          autoAlpha: 0,
-          duration: 1.2,
-          ease: "expo.out",
-          stagger: 0.08,
-          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" },
+      // Phones/tablets: a vertical stack, so content alternates sides as it scrolls in.
+      mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
+        sideIn("[data-work-intro] > *", { from: "left", trigger: sectionRef.current!, start: "top 75%" });
+        gsap.utils.toArray<HTMLElement>("[data-work-panel]").forEach((panel, i) => {
+          sideIn(panel, { from: i % 2 ? "left" : "right", trigger: panel, start: "top 85%" });
         });
       });
 

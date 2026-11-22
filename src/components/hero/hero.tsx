@@ -27,6 +27,21 @@ export function Hero() {
         return;
       }
 
+      // Exit: as you scroll away, the headline and details drift up, blur out and
+      // dim — the "racking focus" hand-off into the next section. Applied to the
+      // containers so it never fights the entrance tweens on the lines themselves.
+      gsap.fromTo(
+        ["[data-hero-headline]", "[data-hero-details]"],
+        { yPercent: 0, filter: "blur(0px)", opacity: 1 },
+        {
+          yPercent: -18,
+          filter: "blur(14px)",
+          opacity: 0.15,
+          ease: "power1.in", // barely changes at first, then gathers pace as the hero leaves
+          scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 0.6 },
+        },
+      );
+
       gsap
         .timeline({ defaults: { ease: "expo.out" }, onComplete: () => setEntered(true) })
         .fromTo(
@@ -54,11 +69,11 @@ export function Hero() {
       <SiteHeader />
       <BlobBackground />
 
-      <h1 className="display-type relative z-10 text-ink" aria-label={site.hero.headline.join(" ")}>
+      <h1 data-hero-headline className="display-type relative z-10 text-ink" aria-label={site.hero.headline.join(" ")}>
         <HeadlineLines />
       </h1>
 
-      <div className="relative z-10 mt-10 grid grid-cols-1 gap-5 sm:mt-14 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end sm:gap-8">
+      <div data-hero-details className="relative z-10 mt-10 grid grid-cols-1 gap-5 sm:mt-14 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end sm:gap-8">
         <p data-hero-reveal className="max-w-[30ch] text-[15px] leading-[1.45] text-ink sm:text-base">
           {site.hero.intro}
         </p>

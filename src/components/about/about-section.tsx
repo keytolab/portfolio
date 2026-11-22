@@ -7,6 +7,7 @@ import { useGSAP } from "@gsap/react";
 import { ArrowUpRight } from "lucide-react";
 import { site } from "@/content/site";
 import { GRAIN_TEXTURE } from "@/lib/grain";
+import { sideIn } from "@/lib/reveal";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -36,8 +37,10 @@ export function AboutSection() {
             scrollTrigger: {
               trigger: "[data-statement]",
               start: "top 78%",
-              end: "bottom 42%",
-              scrub: 0.6,
+              // Fully lit once the statement's bottom passes ~60% — reached when
+              // landing on #about from the menu, so the sentence never arrives half-dim.
+              end: "bottom 60%",
+              scrub: 1,
             },
           },
         );
@@ -48,17 +51,15 @@ export function AboutSection() {
           {
             "--glow": 1,
             ease: "power2.out",
-            scrollTrigger: { trigger: "[data-accent]", start: "top 62%", end: "top 40%", scrub: 0.6 },
+            scrollTrigger: { trigger: "[data-accent]", start: "top 62%", end: "top 40%", scrub: 1 },
           },
         );
-        gsap.from("[data-about-detail]", {
-          y: 24,
-          autoAlpha: 0,
-          duration: 1.1,
-          ease: "expo.out",
-          stagger: 0.1,
-          scrollTrigger: { trigger: "[data-about-details]", start: "top 85%" },
-        });
+        // The statement glides in from the left, blurred, and settles; the words then
+        // keep lighting up with scroll. Details below arrive from opposite sides.
+        sideIn("[data-statement]", { from: "left", trigger: "[data-statement]", start: "top 85%", distance: 0.1 });
+        const [services, elsewhere] = gsap.utils.toArray<HTMLElement>("[data-about-detail]");
+        sideIn(services, { from: "left", trigger: "[data-about-details]", start: "top 88%" });
+        sideIn(elsewhere, { from: "right", trigger: "[data-about-details]", start: "top 88%", delay: 0.1 });
       });
       return () => mm.revert();
     },
