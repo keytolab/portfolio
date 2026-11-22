@@ -64,7 +64,7 @@ export function Hero() {
       id="top"
       ref={heroRef}
       // `hero-pending` hides content until GSAP's inline styles take over the entrance.
-      className={`relative flex min-h-[600px] h-svh flex-col justify-end overflow-hidden px-5 pb-8 sm:px-8 sm:pb-10 lg:px-12 lg:pb-12 ${entered ? "" : "hero-pending"}`}
+      className={`relative flex min-h-[600px] h-svh flex-col justify-end overflow-clip px-5 pb-8 sm:px-8 sm:pb-10 lg:px-12 lg:pb-12 ${entered ? "" : "hero-pending"}`}
     >
       <SiteHeader />
       <BlobBackground />

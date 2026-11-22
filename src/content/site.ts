@@ -4,10 +4,11 @@ export const site = {
   title: "Jacek — Designer and developer",
   description:
     "Portfolio of Jacek, a designer and developer making calm, precise interfaces for the web.",
-  // Only list sections that exist on the page. Add Contact when that section is built.
+  // Only list sections that exist on the page.
   nav: [
     { label: "Work", href: "#work" },
     { label: "About", href: "#about" },
+    { label: "Contact", href: "#contact" },
   ],
   hero: {
     // Each string is one line of the giant headline.
@@ -56,5 +57,14 @@ export const site = {
       { label: "YouTube", handle: "@gigovfx", href: "https://www.youtube.com/@gigovfx" },
       { label: "GitHub", handle: "keyzlab", href: "https://github.com/keyzlab" },
     ],
+  },
+  contact: {
+    // Headline split like the About statement; `highlight` gets the yellow, glowing italic.
+    headline: { before: "Let's create the", highlight: "unforgettable", after: "." },
+    intro: "Projects, collaborations or just a hello. Write to me directly.",
+    email: "keyzzlab@gmail.com",
+    backToTop: "Back to top",
+    // Footer copyright year. Set by hand: the page is pre-built, so it can't read today's date.
+    copyrightYear: 2026,
   },
 } as const;

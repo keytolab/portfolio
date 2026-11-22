@@ -71,7 +71,7 @@ export function AboutSection() {
       id="about"
       ref={sectionRef}
       aria-labelledby="about-heading"
-      className="relative overflow-hidden bg-black px-5 py-32 sm:px-8 sm:py-40 lg:px-12 lg:py-48"
+      className="relative overflow-clip bg-black px-5 py-32 sm:px-8 sm:py-40 lg:px-12 lg:py-48"
     >
       {/* Faint warm bloom behind the statement, tied to the accent colour. */}
       <div
