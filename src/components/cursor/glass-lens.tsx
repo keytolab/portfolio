@@ -76,8 +76,13 @@ function isChromium() {
 
 // Lens size relative to full: in the hero, after scrolling past it, and over a link/button.
 const HERO_SCALE = 1;
-const PAGE_SCALE = 0.17; // ~34px across on a 1440px-wide screen
-const CONTROL_SCALE = 0.6; // multiplied with the current scale (kept larger now the base is tiny)
+const PAGE_SCALE = 0.11; // ~22px across on a 1440px-wide screen
+// Over a link/button the scale is multiplied by this. The big hero lens shrinks a lot
+// (to ~60px) so the header links stay readable; the small page cursor only a little.
+const HERO_CONTROL_SCALE = 0.28;
+const CONTROL_SCALE = 0.6;
+// How much the small cursor squeezes while the mouse button is held (0.18 = 18% smaller).
+const PRESS_SQUEEZE = 0.18;
 
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
 
@@ -141,6 +146,7 @@ export function GlassLens() {
     let seen = false;
     let inside = false;
     let overControl = false;
+    let pressed = false;
     let precise = false; // true once scrolled past the hero (exact tracking)
     let lastScale = 0;
 
@@ -175,6 +181,10 @@ export function GlassLens() {
       const el = document.elementFromPoint(target.x, target.y);
       overControl = isControl(el);
     };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && e.button === 0) pressed = true;
+    };
+    const onUp = () => (pressed = false);
     const onLeave = () => (inside = false);
     const onEnter = () => (inside = true);
 
@@ -205,7 +215,10 @@ export function GlassLens() {
       const y = pos.y + (target.y - pos.y) * t;
 
       const base = HERO_SCALE + (PAGE_SCALE - HERO_SCALE) * t;
-      const targetScale = !inside ? 0 : overControl ? base * CONTROL_SCALE : base;
+      const controlScale = HERO_CONTROL_SCALE + (CONTROL_SCALE - HERO_CONTROL_SCALE) * t;
+      // Pressing the mouse squeezes the small cursor a little, like the iPad pointer.
+      const press = pressed ? 1 - PRESS_SQUEEZE * t : 1;
+      const targetScale = !inside ? 0 : (overControl ? base * controlScale : base) * press;
       pos.s = approach(pos.s, targetScale, SCALE_TAU, dt);
       const s = Math.max(pos.s, 0);
       precise = t >= 0.999;
@@ -231,8 +244,16 @@ export function GlassLens() {
     root.addEventListener("pointerleave", onLeave);
     root.addEventListener("pointerenter", onEnter);
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("pointercancel", onUp, { passive: true });
+    window.addEventListener("blur", onUp);
     gsap.ticker.add(tick);
     return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("blur", onUp);
       window.removeEventListener("pointermove", onMove);
       root.removeEventListener("pointerleave", onLeave);
       root.removeEventListener("pointerenter", onEnter);
@@ -321,18 +342,30 @@ export function GlassLens() {
             }}
           />
         </div>
-        {/* Small cursor outside the hero, in the spirit of the iPad/Mac pointer:
-            a soft translucent glass disc, one hairline white edge, a barely-there
-            shadow. Nothing else. Faded in by scroll. */}
+        {/* Small cursor outside the hero, in the spirit of the iPadOS pointer: a
+            frosted-glass bead. It blurs and brightens what's behind it, is lit from
+            above (brighter top, soft specular glint), has a hairline rim and floats
+            on a soft shadow. Faded in by scroll. --rw is one screen pixel in the
+            lens's local units, so every size below is in on-screen pixels. */}
         <div
           ref={ringRef}
           className="absolute inset-0 rounded-full"
           style={{
             opacity: 0,
-            background: "rgb(255 255 255 / 0.12)",
+            backdropFilter: "blur(calc(var(--rw, 1px) * 5)) saturate(1.8) brightness(1.15)",
+            WebkitBackdropFilter: "blur(calc(var(--rw, 1px) * 5)) saturate(1.8) brightness(1.15)",
+            background: [
+              // Specular glint, top-left.
+              "radial-gradient(45% 32% at 36% 24%, rgb(255 255 255 / 0.55), transparent 75%)",
+              // Body: lighter at the top, like glass lit from above.
+              "linear-gradient(to bottom, rgb(255 255 255 / 0.26), rgb(255 255 255 / 0.08))",
+            ].join(", "),
             boxShadow: [
-              "0 0 0 var(--rw, 1px) rgb(255 255 255 / 0.75)", // hairline edge
-              "0 calc(var(--rw, 1px) * 2) calc(var(--rw, 1px) * 10) rgb(0 0 0 / 0.25)", // soft lift
+              "inset 0 var(--rw, 1px) 0 rgb(255 255 255 / 0.6)", // bright top edge
+              "inset 0 0 0 var(--rw, 1px) rgb(255 255 255 / 0.32)", // hairline rim
+              "inset 0 calc(var(--rw, 1px) * -3) calc(var(--rw, 1px) * 6) rgb(0 0 0 / 0.12)", // depth at the base
+              "0 0 0 calc(var(--rw, 1px) * 0.5) rgb(0 0 0 / 0.35)", // keeps it visible on light content
+              "0 calc(var(--rw, 1px) * 4) calc(var(--rw, 1px) * 14) rgb(0 0 0 / 0.4)", // floating shadow
             ].join(", "),
           }}
         />
