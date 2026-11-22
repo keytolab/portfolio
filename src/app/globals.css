@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --font-sans: var(--font-inter-tight);
+  --font-heading: var(--font-inter-tight);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+  Palette — the site is dark only.
+  void      #000000  page background
+  ink       #F2F3F5  ice-white type (the only "accent")
+  ink-muted #9BA1AB  secondary text
+  ink-faint #5C626C  hairlines, tertiary text
+  blob      #06112B → #1A3A8F → #4F76CC → #A9C0EE (shader only)
+*/
+:root {
+  color-scheme: dark;
+  --void: #000000;
+  --ink: #f2f3f5;
+  --ink-muted: #9ba1ab;
+  --ink-faint: #5c626c;
+
+  --background: var(--void);
+  --foreground: var(--ink);
+  --card: #0a0b0d;
+  --card-foreground: var(--ink);
+  --popover: #0a0b0d;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--void);
+  --secondary: #16181c;
+  --secondary-foreground: var(--ink);
+  --muted: #16181c;
+  --muted-foreground: var(--ink-muted);
+  --accent: #16181c;
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: rgb(242 243 245 / 0.7);
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    background: var(--void);
+  }
+  body {
+    @apply text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  html {
+    @apply font-sans;
+  }
+  ::selection {
+    background: var(--ink);
+    color: var(--void);
+  }
+  :focus-visible {
+    outline: 1.5px solid var(--ink);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+/* Scroll cue: a hairline with a light travelling down it */
+.scroll-line {
+  background: linear-gradient(to bottom, transparent, var(--ink) 50%, transparent);
+  background-size: 100% 200%;
+  animation: scroll-line 2.4s var(--ease-out-expo) infinite;
+}
+@keyframes scroll-line {
+  0% { background-position: 0 100%; }
+  100% { background-position: 0 -100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-line { animation: none; background: var(--ink-faint); }
+}
+
+/* Hide hero content until the entrance animation takes over (see <noscript> in layout). */
+.hero-pending .hl-line,
+.hero-pending [data-hero-reveal] {
+  visibility: hidden;
+}
+
+/* Display type used by the hero headline (and copied by the glass lens). */
+.display-type {
+  font-family: var(--font-inter-tight);
+  font-weight: 500;
+  font-size: clamp(4.25rem, 15.5vw, 15.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+}
+@media (max-width: 639px) {
+  .display-type {
+    font-size: 19.5vw;
+  }
+}
