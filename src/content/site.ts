@@ -1,9 +1,9 @@
 // All copy for the site lives here, so it can be edited without touching components.
 export const site = {
-  name: "Jacek",
-  title: "Jacek — Designer and developer",
+  name: "keyz",
+  title: "keyz — Designer and developer",
   description:
-    "Portfolio of Jacek, a designer and developer making calm, precise interfaces for the web.",
+    "Portfolio of keyz, a designer and developer making calm, precise interfaces for the web.",
   // Only list sections that exist on the page.
   nav: [
     { label: "Work", href: "#work" },
@@ -45,7 +45,7 @@ export const site = {
   about: {
     // The statement is split into three parts; `highlight` gets the yellow, glowing italic.
     statement: {
-      before: "I'm Jacek, a designer and developer making",
+      before: "I'm keyz, a designer and developer making",
       highlight: "unforgettable",
       after: "motion, interfaces and brands.",
     },

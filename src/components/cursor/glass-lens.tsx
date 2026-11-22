@@ -13,8 +13,9 @@ import gsap from "gsap";
   different amounts, which leaves a faint rainbow along edges.
 
   It is the site-wide cursor (the native cursor is hidden while it's active).
-  Motion: the lens follows the pointer like a camera move — it eases in, glides,
-  and eases out to a stop with no overshoot. It never changes shape.
+  Motion: in the hero the lens follows the pointer like a camera move — it eases
+  in, glides, and eases out to a stop. Past the hero it becomes a small,
+  minimal, Apple-pointer-like cursor that tracks the pointer exactly. It never changes shape.
   Size: full size over the hero, shrinking smoothly as you scroll down into the
   rest of the page, and smaller still over links and buttons.
 
@@ -75,8 +76,8 @@ function isChromium() {
 
 // Lens size relative to full: in the hero, after scrolling past it, and over a link/button.
 const HERO_SCALE = 1;
-const PAGE_SCALE = 0.28;
-const CONTROL_SCALE = 0.4; // multiplied with the current scale
+const PAGE_SCALE = 0.17; // ~34px across on a 1440px-wide screen
+const CONTROL_SCALE = 0.6; // multiplied with the current scale (kept larger now the base is tiny)
 
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
 
@@ -94,6 +95,8 @@ function isControl(el: Element | null | undefined) {
 export function GlassLens() {
   const filterId = `liquid-glass-${useId().replace(/:/g, "")}`;
   const bodyRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const heroLayersRef = useRef<HTMLDivElement>(null);
   const [supported, setSupported] = useState(false);
   const [size, setSize] = useState(0);
 
@@ -138,6 +141,8 @@ export function GlassLens() {
     let seen = false;
     let inside = false;
     let overControl = false;
+    let precise = false; // true once scrolled past the hero (exact tracking)
+    let lastScale = 0;
 
     // Camera-style follow: two exponential smoothing stages in series. One stage
     // alone starts abruptly; two give an ease-in *and* ease-out, like a dolly
@@ -159,6 +164,10 @@ export function GlassLens() {
         pos.x = mid.x = target.x;
         pos.y = mid.y = target.y;
       }
+      // In precise mode, move right away rather than on the next frame: zero lag.
+      if (precise) {
+        body.style.transform = `translate3d(${(target.x - R).toFixed(2)}px, ${(target.y - R).toFixed(2)}px, 0) scale(${lastScale.toFixed(4)})`;
+      }
     };
     // The element under a still pointer changes while scrolling, so re-check it then.
     const onScroll = () => {
@@ -172,26 +181,49 @@ export function GlassLens() {
     const tick = () => {
       // Real elapsed seconds, capped so a backgrounded tab doesn't jump.
       const dt = Math.min(gsap.ticker.deltaRatio(60), 3) / 60;
-      mid.x = approach(mid.x, target.x, FOLLOW_TAU, dt);
-      mid.y = approach(mid.y, target.y, FOLLOW_TAU, dt);
-      pos.x = approach(pos.x, mid.x, FOLLOW_TAU, dt);
-      pos.y = approach(pos.y, mid.y, FOLLOW_TAU, dt);
 
-      // Scroll-linked size: full in the hero, easing down to PAGE_SCALE over the
-      // first ~35% of a screen of scrolling. Driven by scroll position, so it
-      // shrinks as you scroll (and grows back if you scroll up).
+      // Scroll-linked mode, 0 = hero, 1 = rest of the page. Over the first ~35% of
+      // a screen of scrolling the lens shrinks to PAGE_SCALE, switches from the
+      // eased "camera" follow to exact tracking, and gains a high-contrast ring.
+      // Driven by scroll position, so it reverses if you scroll back up.
       const hero = document.getElementById("top");
       const span = (hero?.offsetHeight ?? window.innerHeight) * 0.35;
       const t = smoothstep(Math.min(1, Math.max(0, window.scrollY / span)));
+
+      if (t >= 0.999) {
+        // Precise: sit exactly on the pointer (and keep the eased stages in sync).
+        mid.x = pos.x = target.x;
+        mid.y = pos.y = target.y;
+      } else {
+        mid.x = approach(mid.x, target.x, FOLLOW_TAU, dt);
+        mid.y = approach(mid.y, target.y, FOLLOW_TAU, dt);
+        pos.x = approach(pos.x, mid.x, FOLLOW_TAU, dt);
+        pos.y = approach(pos.y, mid.y, FOLLOW_TAU, dt);
+      }
+      // Blend between eased and exact during the hand-off so there's no jump.
+      const x = pos.x + (target.x - pos.x) * t;
+      const y = pos.y + (target.y - pos.y) * t;
+
       const base = HERO_SCALE + (PAGE_SCALE - HERO_SCALE) * t;
       const targetScale = !inside ? 0 : overControl ? base * CONTROL_SCALE : base;
       pos.s = approach(pos.s, targetScale, SCALE_TAU, dt);
       const s = Math.max(pos.s, 0);
+      precise = t >= 0.999;
+      lastScale = s;
 
       // The lens always stays a perfect circle; only position and size change.
-      body.style.transform =
-        `translate3d(${(pos.x - R).toFixed(2)}px, ${(pos.y - R).toFixed(2)}px, 0) scale(${s.toFixed(4)})`;
+      body.style.transform = `translate3d(${(x - R).toFixed(2)}px, ${(y - R).toFixed(2)}px, 0) scale(${s.toFixed(4)})`;
       body.style.opacity = s < 0.02 ? "0" : "1";
+
+      // Hand-off between the two looks: the big lens's detailing fades out and the
+      // minimal small-cursor disc fades in. The disc's edge width is divided by the
+      // scale so it stays a 1px hairline on screen however small the lens gets.
+      const ring = ringRef.current;
+      if (ring) {
+        ring.style.opacity = t.toFixed(3);
+        ring.style.setProperty("--rw", `${(1 / Math.max(s, 0.05)).toFixed(2)}px`);
+      }
+      if (heroLayersRef.current) heroLayersRef.current.style.opacity = (1 - t).toFixed(3);
     };
 
     const root = document.documentElement;
@@ -263,26 +295,44 @@ export function GlassLens() {
           className="absolute inset-0 rounded-full"
           style={{ backdropFilter: backdrop, WebkitBackdropFilter: backdrop }}
         />
-        {/* Specular light: a soft glint top-left, a faint bounce bottom-right.
+        {/* Big-lens detailing (hero only; fades out as the lens shrinks).
             Normal blending on purpose — a blend mode here would isolate the lens
             and cut the glass off from the page behind it. */}
+        <div ref={heroLayersRef} className="absolute inset-0 rounded-full">
+          {/* Specular light: a soft glint top-left, a faint bounce bottom-right. */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                "radial-gradient(60% 45% at 30% 18%, rgb(255 255 255 / 0.14), transparent 70%), radial-gradient(50% 35% at 72% 88%, rgb(190 210 255 / 0.07), transparent 70%)",
+            }}
+          />
+          {/* Rim: bright where light enters (top-left), dimmer on the far side, soft inner depth. */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              boxShadow: [
+                "inset 1.5px 1.5px 0.5px -0.5px rgb(255 255 255 / 0.7)",
+                "inset -1px -1px 0.5px -0.5px rgb(255 255 255 / 0.35)",
+                "inset 0 0 0 0.5px rgb(255 255 255 / 0.18)",
+                "inset 0 0 22px rgb(255 255 255 / 0.06)",
+                "0 12px 32px -14px rgb(0 0 0 / 0.55)",
+              ].join(", "),
+            }}
+          />
+        </div>
+        {/* Small cursor outside the hero, in the spirit of the iPad/Mac pointer:
+            a soft translucent glass disc, one hairline white edge, a barely-there
+            shadow. Nothing else. Faded in by scroll. */}
         <div
+          ref={ringRef}
           className="absolute inset-0 rounded-full"
           style={{
-            background:
-              "radial-gradient(60% 45% at 30% 18%, rgb(255 255 255 / 0.14), transparent 70%), radial-gradient(50% 35% at 72% 88%, rgb(190 210 255 / 0.07), transparent 70%)",
-          }}
-        />
-        {/* Rim: bright where light enters (top-left), dimmer on the far side, soft inner depth. */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
+            opacity: 0,
+            background: "rgb(255 255 255 / 0.12)",
             boxShadow: [
-              "inset 1.5px 1.5px 0.5px -0.5px rgb(255 255 255 / 0.7)",
-              "inset -1px -1px 0.5px -0.5px rgb(255 255 255 / 0.35)",
-              "inset 0 0 0 0.5px rgb(255 255 255 / 0.18)",
-              "inset 0 0 22px rgb(255 255 255 / 0.06)",
-              "0 12px 32px -14px rgb(0 0 0 / 0.55)",
+              "0 0 0 var(--rw, 1px) rgb(255 255 255 / 0.75)", // hairline edge
+              "0 calc(var(--rw, 1px) * 2) calc(var(--rw, 1px) * 10) rgb(0 0 0 / 0.25)", // soft lift
             ].join(", "),
           }}
         />

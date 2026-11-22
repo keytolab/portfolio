@@ -1,5 +1,5 @@
 // Shared artwork for the generated tab icon and Apple touch icon:
-// an ice-white "J" on the hero's blue-to-black glow.
+// an ice-white "k" (for keyz) on the hero's blue-to-black glow.
 export function IconArt({ size, radius }: { size: number; radius: number }) {
   return (
     <div
@@ -19,7 +19,7 @@ export function IconArt({ size, radius }: { size: number; radius: number }) {
         paddingBottom: Math.round(size * 0.04),
       }}
     >
-      J
+      k
     </div>
   );
 }

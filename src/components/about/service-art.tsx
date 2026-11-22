@@ -132,12 +132,12 @@ function BrandArt() {
         <div className="absolute inset-[14%] rounded-full border border-white/10 motion-safe:animate-[spin_26s_linear_infinite_reverse]">
           <span className="absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: YELLOW, boxShadow: `0 0 14px ${YELLOW}` }} />
         </div>
-        {/* The mark: same J as the site icon. */}
+        {/* The mark: same "k" monogram as the site icon. */}
         <div
           className="absolute inset-[30%] flex items-center justify-center rounded-[28%] text-[clamp(2.5rem,5vw,4rem)] font-semibold text-[#f2f3f5] shadow-2xl shadow-black/60"
           style={{ background: "radial-gradient(circle at 38% 62%, #3f66c2 0%, #1a3a8f 40%, #000 100%)" }}
         >
-          J
+          k
         </div>
       </div>
       {/* Swatches. */}
