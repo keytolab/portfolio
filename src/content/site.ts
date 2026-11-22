@@ -1,9 +1,9 @@
 // All copy for the site lives here, so it can be edited without touching components.
 export const site = {
   name: "Keyto",
-  title: "keyto — Designer and developer",
+  title: "Keyto — Designer and developer",
   description:
-    "Portfolio of keyto, a designer and developer making calm, precise interfaces for the web.",
+    "Portfolio of Keyto, a designer and developer making calm, precise interfaces for the web.",
   // Only list sections that exist on the page.
   nav: [
     { label: "Work", href: "#work" },
