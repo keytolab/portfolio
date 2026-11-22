@@ -94,7 +94,8 @@ const smoothstep = (t: number) => t * t * (3 - 2 * t);
 function isControl(el: Element | null | undefined) {
   if (!el?.closest) return false;
   if (el.closest("[data-lens-ignore]")) return false;
-  return !!el.closest("a, button, [role='button'], input, textarea, select, label");
+  // data-lens-zone: a whole group (e.g. the nav) counts as one control, gaps included.
+  return !!el.closest("a, button, [role='button'], input, textarea, select, label, [data-lens-zone]");
 }
 
 export function GlassLens() {
@@ -154,7 +155,10 @@ export function GlassLens() {
     // alone starts abruptly; two give an ease-in *and* ease-out, like a dolly
     // shot, and never overshoot. Time constants in seconds — larger = slower glide.
     const FOLLOW_TAU = 0.065;
-    const SCALE_TAU = 0.12;
+    const SCALE_TAU = 0.1; // shrinking
+    const SCALE_TAU_GROW = 0.2; // growing back
+    const CONTROL_RELEASE_MS = 180;
+    let holdUntil = 0;
     const approach = (from: number, to: number, tau: number, dt: number) =>
       from + (to - from) * (1 - Math.exp(-dt / tau));
 
@@ -216,10 +220,16 @@ export function GlassLens() {
 
       const base = HERO_SCALE + (PAGE_SCALE - HERO_SCALE) * t;
       const controlScale = HERO_CONTROL_SCALE + (CONTROL_SCALE - HERO_CONTROL_SCALE) * t;
+      // Stay small for a moment after leaving a link, so brushing past an edge or
+      // crossing a gap doesn't make the lens pulse big-small-big.
+      const now = performance.now();
+      if (overControl) holdUntil = now + CONTROL_RELEASE_MS;
+      const small = overControl || now < holdUntil;
       // Pressing the mouse squeezes the small cursor a little, like the iPad pointer.
       const press = pressed ? 1 - PRESS_SQUEEZE * t : 1;
-      const targetScale = !inside ? 0 : (overControl ? base * controlScale : base) * press;
-      pos.s = approach(pos.s, targetScale, SCALE_TAU, dt);
+      const targetScale = !inside ? 0 : (small ? base * controlScale : base) * press;
+      // Shrink briskly, grow back more gently so the return reads as one smooth swell.
+      pos.s = approach(pos.s, targetScale, targetScale < pos.s ? SCALE_TAU : SCALE_TAU_GROW, dt);
       const s = Math.max(pos.s, 0);
       precise = t >= 0.999;
       lastScale = s;
