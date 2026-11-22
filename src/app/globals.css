@@ -108,6 +108,20 @@
   }
 }
 
+/* Service card illustrations */
+@keyframes timeline {
+  from { width: 18%; }
+  to { width: 82%; }
+}
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: -10px -8px; }
+}
+@keyframes grid {
+  from { background-position: 0 0; }
+  to { background-position: 0 36px; }
+}
+
 /* Scroll cue: a hairline with a light travelling down it */
 .scroll-line {
   background: linear-gradient(to bottom, transparent, var(--ink) 50%, transparent);

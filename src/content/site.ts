@@ -49,7 +49,29 @@ export const site = {
       highlight: "unforgettable",
       after: "motion, interfaces and brands.",
     },
-    services: ["Motion graphics", "UI/UX design", "Web development", "Branding"],
+    // Shown as a swipeable card carousel. `icon` picks the card's graphic: "motion" | "ui" | "web" | "brand".
+    services: [
+      {
+        title: "Motion graphics",
+        tagline: "Films & ads",
+        icon: "motion",
+      },
+      {
+        title: "UI/UX design",
+        tagline: "Calm interfaces",
+        icon: "ui",
+      },
+      {
+        title: "Web development",
+        tagline: "Next.js & GSAP",
+        icon: "web",
+      },
+      {
+        title: "Branding",
+        tagline: "Identity systems",
+        icon: "brand",
+      },
+    ],
     // Shown in this order.
     socials: [
       { label: "TikTok", handle: "@77forms", href: "https://www.tiktok.com/@77forms" },

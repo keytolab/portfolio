@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import { site } from "@/content/site";
 import { GRAIN_TEXTURE } from "@/lib/grain";
 import { sideIn } from "@/lib/reveal";
+import { ServiceCarousel } from "./service-carousel";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -37,9 +38,9 @@ export function AboutSection() {
             scrollTrigger: {
               trigger: "[data-statement]",
               start: "top 78%",
-              // Fully lit once the statement's bottom passes ~60% — reached when
+              // Fully lit once the statement's bottom passes ~72% — reached when
               // landing on #about from the menu, so the sentence never arrives half-dim.
-              end: "bottom 60%",
+              end: "bottom 72%",
               scrub: 1,
             },
           },
@@ -57,9 +58,9 @@ export function AboutSection() {
         // The statement glides in from the left, blurred, and settles; the words then
         // keep lighting up with scroll. Details below arrive from opposite sides.
         sideIn("[data-statement]", { from: "left", trigger: "[data-statement]", start: "top 85%", distance: 0.1 });
-        const [services, elsewhere] = gsap.utils.toArray<HTMLElement>("[data-about-detail]");
-        sideIn(services, { from: "left", trigger: "[data-about-details]", start: "top 88%" });
-        sideIn(elsewhere, { from: "right", trigger: "[data-about-details]", start: "top 88%", delay: 0.1 });
+        // The services carousel arrives from the right; the links from the left.
+        sideIn("[data-about-services]", { from: "right", trigger: "[data-about-services]", start: "top 85%", distance: 0.06, delay: 0.1 });
+        sideIn("[data-about-elsewhere] li", { from: "left", trigger: "[data-about-elsewhere]", start: "top 92%", distance: 0.03, stagger: 0.06 });
       });
       return () => mm.revert();
     },
@@ -85,9 +86,11 @@ export function AboutSection() {
         About
       </h2>
 
+      {/* Statement on the left, the services carousel on the right (stacked on smaller screens). */}
+      <div className="relative grid items-center gap-16 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-[6vw]">
       <p
         data-statement
-        className="relative max-w-[20ch] text-[clamp(2.4rem,6vw,6.25rem)] font-medium leading-[1.02] tracking-[-0.045em] text-ink"
+        className="relative max-w-[20ch] text-[clamp(2.4rem,6vw,6.25rem)] font-medium leading-[1.02] tracking-[-0.045em] text-ink lg:text-[clamp(2.4rem,4.6vw,5.25rem)]"
       >
         {/* Each word is its own span (for the reveal) with a real space after it, so lines wrap normally. */}
         {words(statement.before).map((w, i) => (
@@ -109,35 +112,30 @@ export function AboutSection() {
         ))}
       </p>
 
-      <div
-        data-about-details
-        className="relative mt-20 grid gap-12 border-t border-white/10 pt-10 sm:mt-28 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.2fr]"
-      >
-        <div data-about-detail>
-          <h3 className="text-[13px] text-ink-faint">Services</h3>
-          <ul className="mt-4 space-y-2 text-[clamp(1.125rem,1.6vw,1.5rem)] font-medium tracking-[-0.02em] text-ink">
-            {services.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-        </div>
+      <div data-about-services className="w-full max-w-[440px] justify-self-center lg:justify-self-end">
+        <h3 className="mb-4 text-[13px] text-ink-faint">Services</h3>
+        <ServiceCarousel services={services} />
+      </div>
+      </div>
 
-        <div data-about-detail>
-          <h3 className="text-[13px] text-ink-faint">Elsewhere</h3>
-          <ul className="mt-4 space-y-2">
+      <div data-about-details className="relative mt-20 sm:mt-28">
+
+        <div data-about-elsewhere className="flex flex-col gap-5 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:gap-10">
+          <h3 className="shrink-0 text-[13px] text-ink-faint">Elsewhere</h3>
+          <ul className="flex flex-wrap gap-2.5">
             {socials.map((s) => (
               <li key={s.href}>
                 <a
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-2 text-[clamp(1.125rem,1.6vw,1.5rem)] font-medium tracking-[-0.02em] text-ink"
+                  className="group inline-flex items-center gap-2 rounded-full bg-white/[0.03] py-2.5 pl-4 pr-3.5 text-[14px] font-medium text-ink ring-1 ring-white/10 transition-colors duration-300 hover:bg-white/[0.07] hover:ring-white/25"
                 >
                   {s.label}
                   <span className="text-ink-muted transition-colors duration-300 group-hover:text-ink">{s.handle}</span>
                   <ArrowUpRight
                     aria-hidden
-                    className="size-5 text-ink-muted transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+                    className="size-4 text-ink-muted transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
                     strokeWidth={1.75}
                   />
                   <span className="sr-only">(opens in a new tab)</span>
