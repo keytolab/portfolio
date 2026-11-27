@@ -34,6 +34,19 @@ export const site = {
         // Brand colour used for the card's glow.
         accent: "#1ed760",
       },
+      {
+        slug: "sakura",
+        title: "Sakura",
+        description: "A night cherry tree in living ASCII. Branches sway, petals fall and your cursor makes the wind.",
+        role: "Design and code",
+        year: "2026",
+        type: "Creative coding",
+        href: "https://keytolab.github.io/sakura/",
+        linkLabel: "Visit site",
+        // A full-bleed screenshot instead of a centred logo.
+        cover: "/work/sakura-cover.webp",
+        accent: "#ff9ec8",
+      },
     ],
     comingSoon: {
       title: "More work soon",

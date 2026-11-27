@@ -11,8 +11,10 @@ export type Project = {
   type: string;
   href: string;
   linkLabel: string;
-  logo: string;
   accent: string;
+  // Give one: a logo centred on a brand glow, or a full-bleed cover image (e.g. a screenshot).
+  logo?: string;
+  cover?: string;
 };
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
@@ -35,27 +37,46 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         data-lens-ignore
         className="relative block aspect-[16/10] overflow-hidden rounded-[22px] bg-[#030504] ring-1 ring-white/[0.07] sm:rounded-[28px]"
       >
-        {/* Brand glow — brightens on hover. */}
-        <div
-          className="absolute inset-0 opacity-80 transition-opacity duration-700 ease-[var(--ease-out-expo)] group-hover:opacity-100"
-          style={{
-            background: `radial-gradient(52% 62% at 50% 58%, color-mix(in srgb, ${accent} 42%, transparent), color-mix(in srgb, ${accent} 10%, transparent) 55%, transparent 78%)`,
-          }}
-        />
-        {/* Logo, with a slow parallax drift while the track scrolls (data-parallax). */}
-        <div data-parallax className="absolute inset-0 flex items-center justify-center">
-          <div className="relative aspect-square w-[24%] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.05]">
-            <Image
-              src={project.logo}
-              alt=""
-              fill
-              sizes="(min-width: 768px) 16vw, 24vw"
-              className="object-contain"
-              style={{ filter: `drop-shadow(0 18px 60px color-mix(in srgb, ${accent} 55%, transparent))` }}
-              priority={index === 0}
-            />
+        {project.cover ? (
+          // Full-bleed cover. It's wider than the card so the parallax drift (±10%
+          // of its width) never shows an edge; zooms in slightly on hover.
+          <div data-parallax className="absolute inset-y-0 -inset-x-[14%]">
+            <div className="absolute inset-0 opacity-85 transition-[opacity,scale] duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03] group-hover:opacity-100">
+              <Image
+                src={project.cover}
+                alt=""
+                fill
+                sizes="(min-width: 768px) 75vw, 130vw"
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
           </div>
-        </div>
+        ) : project.logo ? (
+          <>
+            {/* Brand glow — brightens on hover. */}
+            <div
+              className="absolute inset-0 opacity-80 transition-opacity duration-700 ease-[var(--ease-out-expo)] group-hover:opacity-100"
+              style={{
+                background: `radial-gradient(52% 62% at 50% 58%, color-mix(in srgb, ${accent} 42%, transparent), color-mix(in srgb, ${accent} 10%, transparent) 55%, transparent 78%)`,
+              }}
+            />
+            {/* Logo, with a slow parallax drift while the track scrolls (data-parallax). */}
+            <div data-parallax className="absolute inset-0 flex items-center justify-center">
+              <div className="relative aspect-square w-[24%] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.05]">
+                <Image
+                  src={project.logo}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 16vw, 24vw"
+                  className="object-contain"
+                  style={{ filter: `drop-shadow(0 18px 60px color-mix(in srgb, ${accent} 55%, transparent))` }}
+                  priority={index === 0}
+                />
+              </div>
+            </div>
+          </>
+        ) : null}
         {/* Grain + soft vignette so it sits in the same world as the hero. */}
         <div className="absolute inset-0 opacity-50 mix-blend-overlay" style={{ backgroundImage: GRAIN_TEXTURE }} />
         <div
